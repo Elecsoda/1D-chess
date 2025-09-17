@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>一维跳棋游戏</title>
+    <title>一维跳棋游戏@孙维刚研究院</title>
     <style>
         body {
             font-family: 'Microsoft YaHei', Arial, sans-serif;
@@ -77,8 +77,8 @@
         }
 
         .cell {
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             border: 2px solid #2d3748;
             margin: 1px;
             display: flex;
@@ -123,8 +123,8 @@
         }
 
         .piece {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background: linear-gradient(135deg, #4299e1, #2b6cb0);
             border: 2px solid #2a4365;
@@ -253,8 +253,8 @@
         }
 
         .reverse-ghost-piece {
-            width: 40px;
-            height: 40px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             background: rgba(160, 174, 192, 0.6);
             border: 2px solid rgba(160, 174, 192, 0.8);
@@ -270,21 +270,21 @@
         }
 
         .reverse-mode .cell {
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             border-radius: 8px;
             margin: 0 1px;
             flex-shrink: 0;
         }
 
         .reverse-mode .piece {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
         }
 
         .reverse-mode .reverse-ghost-piece {
-            width: 32px;
-            height: 32px;
+            width: 28px;
+            height: 28px;
         }
 
         /* 被跳过的棋子样式 - 添加叉号 */
@@ -350,22 +350,22 @@
             }
 
             .cell {
-                width: 40px;
-                height: 40px;
+                width: 35px;
+                height: 35px;
                 margin: 1px;
                 border-width: 2px;
-                min-width: 40px;
-                min-height: 40px;
+                min-width: 35px;
+                min-height: 35px;
             }
 
             .piece {
-                width: 26px;
-                height: 26px;
+                width: 22px;
+                height: 22px;
             }
 
             .reverse-ghost-piece {
-                width: 26px;
-                height: 26px;
+                width: 22px;
+                height: 22px;
             }
 
             /* 逆推模式下的正方形样式调整 */
@@ -376,22 +376,22 @@
             }
 
             .reverse-mode .cell {
-                width: 40px;
-                height: 40px;
-                min-width: 40px;
-                min-height: 40px;
+                width: 35px;
+                height: 35px;
+                min-width: 35px;
+                min-height: 35px;
                 margin: 0 1px;
                 flex-shrink: 0;
             }
 
             .reverse-mode .piece {
-                width: 26px;
-                height: 26px;
+                width: 22px;
+                height: 22px;
             }
 
             .reverse-mode .reverse-ghost-piece {
-                width: 26px;
-                height: 26px;
+                width: 22px;
+                height: 22px;
             }
 
             .controls {
@@ -450,36 +450,41 @@
 
         /* 超小屏幕适配 */
         @media (max-width: 480px) {
+            .game-board {
+                padding: 20px 2px 10px 2px;
+                margin: 10px 0;
+            }
             .cell {
-                width: 32px;
-                height: 32px;
-                min-width: 32px;
-                min-height: 32px;
+                width: 28px;
+                height: 28px;
+                min-width: 28px;
+                min-height: 28px;
+                margin: 0.5px;
             }
 
             .piece {
-                width: 20px;
-                height: 20px;
+                width: 18px;
+                height: 18px;
             }
 
             .reverse-ghost-piece {
-                width: 20px;
-                height: 20px;
+                width: 18px;
+                height: 18px;
             }
 
             .reverse-mode .cell {
-                width: 32px;
-                height: 32px;
-                min-width: 32px;
-                min-height: 32px;
-                margin: 0 1px;
+                width: 28px;
+                height: 28px;
+                min-width: 28px;
+                min-height: 28px;
+                margin: 0 0.5px;
                 flex-shrink: 0;
             }
 
             .reverse-mode .piece,
             .reverse-mode .reverse-ghost-piece {
-                width: 20px;
-                height: 20px;
+                width: 18px;
+                height: 18px;
             }
 
             button {
@@ -502,7 +507,7 @@
 </head>
 <body>
     <div class="game-container">
-        <h1>🏁 一维跳棋游戏</h1>
+        <h1>一维跳棋游戏 @ 孙维刚研究院</h1>
 
         <div class="game-phase" id="gamePhase">阶段一：选择初始空格位置</div>
 
