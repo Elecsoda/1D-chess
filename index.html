@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>一维跳棋游戏</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #333;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .game-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            padding: 20px;
+            margin: 10px;
+            max-width: 900px;
+            width: calc(100% - 20px);
+            box-sizing: border-box;
+        }
+
+        h1 {
+            text-align: center;
+            color: #4a5568;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .rules {
+            background: #f7fafc;
+            border-left: 5px solid #4299e1;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 0 10px 10px 0;
+        }
+
+        .rules h3 {
+            margin-top: 0;
+            color: #2d3748;
+        }
+
+        .rules ul {
+            margin: 10px 0;
+            padding-left: 20px;
+        }
+
+        .rules li {
+            margin: 8px 0;
+            line-height: 1.6;
+        }
+
+        .game-board {
+            display: flex;
+            justify-content: center;
+            margin: 20px 0;
+            padding: 25px 10px 15px 10px;
+            background: #edf2f7;
+            border-radius: 15px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+            overflow-x: auto;
+            flex-wrap: nowrap;
+        }
+
+        .cell {
+            width: 50px;
+            height: 50px;
+            border: 2px solid #2d3748;
+            margin: 1px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fff;
+            border-radius: 8px;
+            position: relative;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            touch-action: manipulation;
+            min-width: 44px;
+            min-height: 44px;
+        }
+
+        .cell:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .cell.empty {
+            background: #f56565;
+            border-color: #e53e3e;
+        }
+
+        .cell.selected {
+            background: #68d391;
+            border-color: #38a169;
+            transform: scale(1.1);
+        }
+
+        .cell.valid-move {
+            background: #fbb6ce;
+            border-color: #d69e2e;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .piece {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #4299e1, #2b6cb0);
+            border: 2px solid #2a4365;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .piece:hover {
+            transform: scale(1.1);
+        }
+
+        .controls {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        button {
+            background: linear-gradient(135deg, #4299e1, #2b6cb0);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            font-size: 16px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            touch-action: manipulation;
+            min-width: 44px;
+            min-height: 44px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        button:disabled {
+            background: #a0aec0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status {
+            text-align: center;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            background: #e6fffa;
+            border: 2px solid #38b2ac;
+        }
+
+        .status.setup {
+            background: #fff5f5;
+            border-color: #f56565;
+        }
+
+        .status.game-over {
+            background: #f0fff4;
+            border-color: #38a169;
+        }
+
+        .cell-number {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 12px;
+            color: #718096;
+            font-weight: bold;
+            z-index: 10;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 2px 4px;
+            border-radius: 4px;
+            min-width: 16px;
+            text-align: center;
+        }
+
+        .piece-count {
+            text-align: center;
+            font-size: 16px;
+            color: #4a5568;
+            margin: 10px 0;
+        }
+
+        .move-hint {
+            text-align: center;
+            color: #718096;
+            font-style: italic;
+            margin: 10px 0;
+        }
+
+        .game-phase {
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #2d3748;
+            margin: 20px 0;
+            padding: 10px;
+            background: #edf2f7;
+            border-radius: 10px;
+        }
+
+        .reverse-mode {
+            background: #fef5e7 !important;
+            border-color: #d69e2e !important;
+        }
+
+        .reverse-mode .cell.empty {
+            background: #ffffff !important;
+            border-color: #2d3748 !important;
+        }
+
+        .cell.reverse-target {
+            background: #fed7d7;
+            border-color: #e53e3e;
+            animation: pulse 1s infinite;
+        }
+
+        .cell.reverse-source {
+            background: #c6f6d5;
+            border-color: #38a169;
+        }
+
+        .reverse-ghost-piece {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(160, 174, 192, 0.6);
+            border: 2px solid rgba(160, 174, 192, 0.8);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        /* 逆推模式下的正方形样式 */
+        .reverse-mode .game-board {
+            justify-content: flex-start;
+            overflow-x: auto;
+            padding: 25px 15px 15px 15px;
+        }
+
+        .reverse-mode .cell {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            margin: 0 1px;
+            flex-shrink: 0;
+        }
+
+        .reverse-mode .piece {
+            width: 32px;
+            height: 32px;
+        }
+
+        .reverse-mode .reverse-ghost-piece {
+            width: 32px;
+            height: 32px;
+        }
+
+        /* 被跳过的棋子样式 - 添加叉号 */
+        .jumped-piece::after {
+            content: '✕';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #e53e3e;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(255,255,255,0.8);
+            z-index: 10;
+        }
+
+        /* 左侧可行位置 */
+        .reverse-target-left {
+            background: #fed7d7;
+            border-color: #f56565;
+            animation: pulse 1s infinite;
+        }
+
+        /* 右侧可行位置 */
+        .reverse-target-right {
+            background: #bee3f8;
+            border-color: #4299e1;
+            animation: pulse 1s infinite;
+        }
+
+        .reverse-ghost-piece-left {
+            background: rgba(245, 101, 101, 0.6);
+            border: 2px solid rgba(245, 101, 101, 0.8);
+        }
+
+        .reverse-ghost-piece-right {
+            background: rgba(66, 153, 225, 0.6);
+            border: 2px solid rgba(66, 153, 225, 0.8);
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+
+            .game-container {
+                padding: 15px;
+                margin: 5px;
+                border-radius: 15px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+                margin-bottom: 15px;
+            }
+
+            .game-board {
+                margin: 15px 0;
+                padding: 20px 5px 10px 5px;
+                overflow-x: auto;
+                justify-content: flex-start;
+            }
+
+            .cell {
+                width: 40px;
+                height: 40px;
+                margin: 1px;
+                border-width: 2px;
+                min-width: 40px;
+                min-height: 40px;
+            }
+
+            .piece {
+                width: 26px;
+                height: 26px;
+            }
+
+            .reverse-ghost-piece {
+                width: 26px;
+                height: 26px;
+            }
+
+            /* 逆推模式下的正方形样式调整 */
+            .reverse-mode .game-board {
+                padding: 20px 5px 10px 5px;
+                justify-content: flex-start;
+                overflow-x: auto;
+            }
+
+            .reverse-mode .cell {
+                width: 40px;
+                height: 40px;
+                min-width: 40px;
+                min-height: 40px;
+                margin: 0 1px;
+                flex-shrink: 0;
+            }
+
+            .reverse-mode .piece {
+                width: 26px;
+                height: 26px;
+            }
+
+            .reverse-mode .reverse-ghost-piece {
+                width: 26px;
+                height: 26px;
+            }
+
+            .controls {
+                margin: 20px 0;
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 10px;
+            }
+
+            button {
+                font-size: 14px;
+                padding: 12px 16px;
+                margin: 0;
+                flex: 1;
+                min-width: 120px;
+                max-width: 150px;
+            }
+
+            .status, .move-hint, .piece-count {
+                font-size: 14px;
+                padding: 10px;
+                margin: 8px 0;
+            }
+
+            .game-phase {
+                font-size: 16px;
+                padding: 8px;
+                margin: 15px 0;
+            }
+
+            .rules {
+                margin-top: 20px;
+                padding: 15px;
+            }
+
+            .rules h3 {
+                font-size: 16px;
+            }
+
+            .rules li {
+                font-size: 14px;
+                margin: 6px 0;
+            }
+
+            .cell-number {
+                font-size: 10px;
+                top: -16px;
+                padding: 1px 3px;
+            }
+
+            .jumped-piece::after {
+                font-size: 18px;
+            }
+        }
+
+        /* 超小屏幕适配 */
+        @media (max-width: 480px) {
+            .cell {
+                width: 32px;
+                height: 32px;
+                min-width: 32px;
+                min-height: 32px;
+            }
+
+            .piece {
+                width: 20px;
+                height: 20px;
+            }
+
+            .reverse-ghost-piece {
+                width: 20px;
+                height: 20px;
+            }
+
+            .reverse-mode .cell {
+                width: 32px;
+                height: 32px;
+                min-width: 32px;
+                min-height: 32px;
+                margin: 0 1px;
+                flex-shrink: 0;
+            }
+
+            .reverse-mode .piece,
+            .reverse-mode .reverse-ghost-piece {
+                width: 20px;
+                height: 20px;
+            }
+
+            button {
+                font-size: 12px;
+                padding: 10px 12px;
+                min-width: 100px;
+            }
+
+            .jumped-piece::after {
+                font-size: 14px;
+            }
+
+            .cell-number {
+                font-size: 8px;
+                top: -14px;
+                padding: 1px 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>🏁 一维跳棋游戏</h1>
+
+        <div class="game-phase" id="gamePhase">阶段一：选择初始空格位置</div>
+
+        <div class="game-board" id="gameBoard">
+            <!-- 棋盘格子将由JavaScript生成 -->
+        </div>
+
+        <div class="piece-count" id="pieceCount">棋子数量：10</div>
+        <div class="status" id="status">请点击任意棋子移除，创建初始空格开始游戏</div>
+        <div class="move-hint" id="moveHint"></div>
+
+        <div class="controls">
+            <button onclick="resetGame()" id="resetBtn">重新开始</button>
+            <button onclick="undoMove()" id="undoBtn">撤回上一步</button>
+            <button onclick="toggleMode()" id="modeBtn">切换到逆推模式</button>
+        </div>
+        
+        <div class="rules">
+            <h3>游戏规则：</h3>
+            <ul>
+                <li><strong>目标：</strong>通过跳棋操作，使棋盘上最终只剩下一枚棋子</li>
+                <li><strong>跳棋规则：</strong>若棋子A和B相邻，且B另一侧是空格，则棋子A可绕过B跳到空格中，并吃掉棋子B</li>
+                <li><strong>初始设置：</strong>点击任意棋子将其移除，创建初始空格</li>
+                <li><strong>操作方法：</strong>点击要移动的棋子，再点击目标空格（必须符合跳棋规则）</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        class OneDChess {
+            constructor() {
+                this.isReverseMode = false; // 需要先设置这个
+                this.boardSize = 10; // 默认正向模式10个格子
+                this.board = Array(this.boardSize).fill(true); // true表示有棋子，false表示空格
+                this.gameStarted = false;
+                this.selectedPiece = -1;
+                this.moveCount = 0;
+                this.emptyPosition = -1;
+                this.moveHistory = []; // 存储移动历史
+                this.reverseHistory = []; // 存储逆推历史
+                this.reverseStep = 0; // 逆推步数
+                this.reverseSetup = false; // 逆推模式设置阶段
+                this.init();
+            }
+
+            init() {
+                this.createBoard();
+                this.updateDisplay();
+            }
+
+            createBoard() {
+                const boardElement = document.getElementById('gameBoard');
+                boardElement.innerHTML = '';
+                
+                for (let i = 0; i < this.boardSize; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.dataset.position = i;
+                    
+                    const cellNumber = document.createElement('div');
+                    cellNumber.className = 'cell-number';
+                    cellNumber.textContent = i + 1;
+                    cell.appendChild(cellNumber);
+                    
+                    cell.addEventListener('click', () => this.handleCellClick(i));
+                    boardElement.appendChild(cell);
+                }
+            }
+
+            handleCellClick(position) {
+                if (this.isReverseMode) {
+                    this.handleReverseModeClick(position);
+                    return;
+                }
+
+                if (!this.gameStarted) {
+                    // 初始阶段：移除棋子创建空格
+                    if (this.board[position]) {
+                        this.board[position] = false;
+                        this.emptyPosition = position;
+                        this.gameStarted = true;
+                        this.updateDisplay();
+                        this.updateStatus(`游戏开始！空格位置：${position + 1}。请选择要移动的棋子。`);
+                        this.updateGamePhase("阶段二：跳棋游戏进行中");
+                        // 撤回按钮始终显示，不需要控制显示/隐藏
+                    }
+                } else {
+                    // 游戏阶段
+                    if (this.board[position] && this.selectedPiece === -1) {
+                        // 选择棋子
+                        this.selectedPiece = position;
+                        this.updateDisplay();
+                        this.showValidMoves();
+                        this.updateMoveHint(`已选择位置 ${position + 1} 的棋子，请点击可跳跃的目标位置`);
+                    } else if (this.selectedPiece !== -1 && !this.board[position]) {
+                        // 尝试移动到空格
+                        if (this.isValidMove(this.selectedPiece, position)) {
+                            this.makeMove(this.selectedPiece, position);
+                            this.selectedPiece = -1;
+                            this.moveCount++;
+                            this.updateDisplay();
+                            this.checkGameEnd();
+                        } else {
+                            this.updateMoveHint("无效移动！请选择符合跳棋规则的位置");
+                        }
+                    } else if (this.board[position] && this.selectedPiece !== -1) {
+                        // 重新选择棋子
+                        this.selectedPiece = position;
+                        this.updateDisplay();
+                        this.showValidMoves();
+                        this.updateMoveHint(`重新选择位置 ${position + 1} 的棋子`);
+                    }
+                }
+            }
+
+            isValidMove(from, to) {
+                // 检查是否符合跳棋规则
+                const distance = Math.abs(to - from);
+                if (distance !== 2) return false;
+                
+                const middle = from + (to - from) / 2;
+                return this.board[middle] && !this.board[to];
+            }
+
+            makeMove(from, to) {
+                const middle = from + (to - from) / 2;
+                
+                // 保存移动历史（用于撤回）
+                this.moveHistory.push({
+                    from: from,
+                    to: to,
+                    middle: middle,
+                    boardState: [...this.board]
+                });
+                
+                this.board[from] = false;
+                this.board[middle] = false; // 吃掉中间的棋子
+                this.board[to] = true;
+            }
+
+            showValidMoves() {
+                if (this.selectedPiece === -1) return;
+                
+                const cells = document.querySelectorAll('.cell');
+                cells.forEach(cell => cell.classList.remove('valid-move'));
+                
+                for (let i = 0; i < this.boardSize; i++) {
+                    if (this.isValidMove(this.selectedPiece, i)) {
+                        cells[i].classList.add('valid-move');
+                    }
+                }
+            }
+
+            updateDisplay() {
+                const cells = document.querySelectorAll('.cell');
+                const gameBoard = document.getElementById('gameBoard');
+                let pieceCount = 0;
+                
+                // 为棋盘容器添加或移除逆推模式类
+                if (this.isReverseMode) {
+                    gameBoard.classList.add('reverse-mode');
+                    // 逆推模式下滚动到中心位置（第10个格子）
+                    setTimeout(() => {
+                        this.scrollToCenter();
+                    }, 100);
+                } else {
+                    gameBoard.classList.remove('reverse-mode');
+                }
+                
+                cells.forEach((cell, index) => {
+                    cell.innerHTML = '';
+                    
+                    // 添加位置编号
+                    const cellNumber = document.createElement('div');
+                    cellNumber.className = 'cell-number';
+                    cellNumber.textContent = index + 1;
+                    cell.appendChild(cellNumber);
+                    
+                    // 重置样式，保留基本cell类
+                    cell.className = 'cell';
+                    
+                    if (this.board[index]) {
+                        const piece = document.createElement('div');
+                        piece.className = 'piece';
+                        cell.appendChild(piece);
+                        pieceCount++;
+                        
+                        if (index === this.selectedPiece) {
+                            cell.classList.add('selected');
+                        }
+                    } else {
+                        cell.classList.add('empty');
+                    }
+                });
+                
+                document.getElementById('pieceCount').textContent = `棋子数量：${pieceCount}`;
+                
+                if (this.isReverseMode && this.selectedPiece !== -1) {
+                    this.showReverseOptions();
+                } else if (!this.isReverseMode && this.selectedPiece !== -1) {
+                    this.showValidMoves();
+                }
+            }
+
+            checkGameEnd() {
+                const pieceCount = this.board.filter(cell => cell).length;
+                const hasValidMoves = this.hasAnyValidMove();
+                
+                if (pieceCount === 1) {
+                    this.updateStatus(`🎉 恭喜！您成功了！最终剩余1枚棋子。初始空格位置：${this.emptyPosition + 1}`);
+                    this.updateGamePhase("游戏完成！");
+                    this.updateMoveHint("");
+                } else if (!hasValidMoves) {
+                    this.updateStatus(`😞 游戏结束！无法继续移动。剩余${pieceCount}枚棋子。初始空格位置：${this.emptyPosition + 1}`);
+                    this.updateGamePhase("游戏结束");
+                    this.updateMoveHint("尝试不同的初始空格位置吧！");
+                } else {
+                    this.updateStatus(`继续游戏！还有 ${pieceCount} 枚棋子，已移动 ${this.moveCount} 步`);
+                    this.updateMoveHint("选择一枚棋子进行跳跃");
+                }
+            }
+
+            hasAnyValidMove() {
+                for (let i = 0; i < this.boardSize; i++) {
+                    if (this.board[i]) {
+                        for (let j = 0; j < this.boardSize; j++) {
+                            if (this.isValidMove(i, j)) {
+                                return true;
+                            }
+                        }
+                    }
+                }
+                return false;
+            }
+
+            updateStatus(message) {
+                const statusElement = document.getElementById('status');
+                statusElement.textContent = message;
+                
+                if (!this.gameStarted) {
+                    statusElement.className = 'status setup';
+                } else if (this.board.filter(cell => cell).length === 1 || !this.hasAnyValidMove()) {
+                    statusElement.className = 'status game-over';
+                } else {
+                    statusElement.className = 'status';
+                }
+            }
+
+            updateGamePhase(phase) {
+                document.getElementById('gamePhase').textContent = phase;
+            }
+
+            updateMoveHint(hint) {
+                document.getElementById('moveHint').textContent = hint;
+            }
+
+            scrollToCenter() {
+                if (!this.isReverseMode) return;
+                
+                const gameBoard = document.getElementById('gameBoard');
+                const cells = document.querySelectorAll('.cell');
+                
+                if (cells.length >= 10) {
+                    // 计算第10个格子的位置（索引为9）
+                    const targetCell = cells[9];
+                    const cellRect = targetCell.getBoundingClientRect();
+                    const boardRect = gameBoard.getBoundingClientRect();
+                    
+                    // 计算需要滚动的距离，使第10个格子居中
+                    const scrollLeft = targetCell.offsetLeft - (gameBoard.clientWidth / 2) + (targetCell.offsetWidth / 2);
+                    
+                    gameBoard.scrollTo({
+                        left: Math.max(0, scrollLeft),
+                        behavior: 'smooth'
+                    });
+                }
+            }
+
+            handleReverseModeClick(position) {
+                if (this.reverseSetup) {
+                    // 逆推模式设置阶段：放置棋子
+                    if (!this.board[position]) {
+                        this.board[position] = true;
+                        this.updateDisplay();
+                        const pieceCount = this.board.filter(cell => cell).length;
+                        // 放置第一个棋子后自动开始逆推
+                        if (pieceCount === 1) {
+                            this.reverseSetup = false;
+                            this.updateGamePhase("逆推模式：从结果往回推");
+                            this.updateStatus("逆推模式：点击棋子查看可能的上一步");
+                            this.updateMoveHint("选择棋子查看逆推选项");
+                            document.getElementById('modeBtn').textContent = '结束逆推模式';
+                        } else {
+                            this.updateStatus(`已放置 ${pieceCount} 枚棋子。`);
+                        }
+                    } else {
+                        // 移除棋子
+                        this.board[position] = false;
+                        this.updateDisplay();
+                        const pieceCount = this.board.filter(cell => cell).length;
+                        this.updateStatus(`已移除棋子，当前 ${pieceCount} 枚棋子。`);
+                    }
+                    return;
+                }
+
+                if (this.board[position] && this.selectedPiece === -1) {
+                    // 选择棋子查看逆推选项
+                    this.selectedPiece = position;
+                    this.updateDisplay();
+                    this.updateMoveHint(`已选择位置 ${position + 1} 的棋子，显示可能的逆推步骤`);
+                } else if (!this.board[position] && this.selectedPiece !== -1) {
+                    // 点击空格执行逆推
+                    if (this.isValidReverseMove(this.selectedPiece, position)) {
+                        this.makeReverseMove(this.selectedPiece, position);
+                        this.selectedPiece = -1;
+                        this.reverseStep++;
+                        this.updateDisplay();
+                        this.updateStatus(`逆推第 ${this.reverseStep} 步：棋子数量 ${this.board.filter(cell => cell).length}`);
+                        this.updateMoveHint("继续选择棋子进行逆推，或切换回正向模式");
+                    } else {
+                        this.updateMoveHint("无效的逆推位置！请选择符合规则的位置");
+                    }
+                } else if (this.board[position] && this.selectedPiece !== -1) {
+                    // 重新选择棋子
+                    this.selectedPiece = position;
+                    this.updateDisplay();
+                    this.updateMoveHint(`重新选择位置 ${position + 1} 的棋子`);
+                } else {
+                    this.selectedPiece = -1;
+                    this.updateDisplay();
+                    this.updateMoveHint("请选择一个棋子查看逆推选项");
+                }
+            }
+
+            isValidReverseMove(piecePosition, targetPosition) {
+                // 逆推的有效移动：目标位置必须与棋子距离为2，且中间没有棋子
+                const distance = Math.abs(targetPosition - piecePosition);
+                if (distance !== 2) return false;
+                
+                const middle = piecePosition + (targetPosition - piecePosition) / 2;
+                return !this.board[middle] && !this.board[targetPosition];
+            }
+
+            makeReverseMove(piecePosition, targetPosition) {
+                // 逆推移动：在目标位置和中间位置放置棋子，移除原来的棋子
+                const middle = piecePosition + (targetPosition - piecePosition) / 2;
+                
+                // 保存逆推历史（用于撤销）
+                this.reverseHistory.push({
+                    piecePosition: piecePosition,
+                    targetPosition: targetPosition,
+                    middle: middle,
+                    boardState: [...this.board]
+                });
+                
+                this.board[piecePosition] = false;
+                this.board[middle] = true;
+                this.board[targetPosition] = true;
+            }
+
+            showReverseOptions() {
+                if (this.selectedPiece === -1) return;
+                
+                const cells = document.querySelectorAll('.cell');
+                cells.forEach(cell => {
+                    cell.classList.remove('reverse-target', 'reverse-target-left', 'reverse-target-right', 'reverse-source', 'jumped-piece');
+                    // 移除之前的灰色棋子
+                    const ghostPieces = cell.querySelectorAll('.reverse-ghost-piece, .reverse-ghost-piece-left, .reverse-ghost-piece-right');
+                    ghostPieces.forEach(ghost => ghost.remove());
+                });
+                
+                // 标记当前选中的棋子
+                cells[this.selectedPiece].classList.add('reverse-source');
+                
+                // 显示可能的逆推位置：区分左右两侧
+                for (let i = 0; i < this.boardSize; i++) {
+                    if (this.isValidReverseMove(this.selectedPiece, i)) {
+                        const middle = this.selectedPiece + (i - this.selectedPiece) / 2;
+                        const isLeftMove = i < this.selectedPiece;
+                        
+                        // 为目标位置和中间位置添加不同的样式
+                        if (isLeftMove) {
+                            cells[i].classList.add('reverse-target-left');
+                        } else {
+                            cells[i].classList.add('reverse-target-right');
+                        }
+                        
+                        // 为中间位置（被跳过的棋子）添加叉号
+                        cells[middle].classList.add('jumped-piece');
+                        
+                        // 在目标位置显示灰色棋子（表示逆推后会在这里放棋子）
+                        const targetGhost = document.createElement('div');
+                        targetGhost.className = isLeftMove ? 'reverse-ghost-piece reverse-ghost-piece-left' : 'reverse-ghost-piece reverse-ghost-piece-right';
+                        cells[i].appendChild(targetGhost);
+                        
+                        // 在中间位置显示灰色棋子（表示逆推后会恢复被吃掉的棋子）
+                        const middleGhost = document.createElement('div');
+                        middleGhost.className = isLeftMove ? 'reverse-ghost-piece reverse-ghost-piece-left' : 'reverse-ghost-piece reverse-ghost-piece-right';
+                        cells[middle].appendChild(middleGhost);
+                    }
+                }
+            }
+
+            reset() {
+                this.isReverseMode = false;
+                this.boardSize = 10;
+                this.board = Array(this.boardSize).fill(true);
+                this.gameStarted = false;
+                this.selectedPiece = -1;
+                this.moveCount = 0;
+                this.emptyPosition = -1;
+                this.moveHistory = [];
+                this.reverseHistory = [];
+                this.reverseStep = 0;
+                this.reverseSetup = false;
+                this.createBoard(); // 重新创建10格棋盘
+                this.updateDisplay();
+                this.updateStatus("请点击任意棋子移除，创建初始空格开始游戏");
+                this.updateGamePhase("阶段一：选择初始空格位置");
+                this.updateMoveHint("");
+                // 撤回按钮始终显示
+                document.getElementById('modeBtn').textContent = '切换到逆推模式';
+            }
+        }
+
+        // 全局游戏实例
+        let game;
+
+        // 页面加载完成后初始化游戏
+        document.addEventListener('DOMContentLoaded', function() {
+            game = new OneDChess();
+        });
+
+        function resetGame() {
+            game.reset();
+        }
+
+        function undoMove() {
+            if (game.isReverseMode) {
+                // 逆推模式的撤销
+                if (game.reverseHistory.length === 0) {
+                    alert('没有可撤回的逆推步骤！');
+                    return;
+                }
+                
+                const lastReverseMove = game.reverseHistory.pop();
+                game.board = [...lastReverseMove.boardState];
+                game.reverseStep--;
+                game.selectedPiece = -1;
+                
+                game.updateDisplay();
+                game.updateStatus(`已撤回逆推步骤。当前棋子数量：${game.board.filter(cell => cell).length}`);
+                game.updateMoveHint("选择棋子查看逆推选项");
+            } else {
+                // 正向模式的撤销
+                if (game.moveHistory.length === 0) {
+                    alert('没有可撤回的步骤！');
+                    return;
+                }
+                
+                const lastMove = game.moveHistory.pop();
+                game.board = [...lastMove.boardState];
+                game.moveCount--;
+                game.selectedPiece = -1;
+                
+                game.updateDisplay();
+                game.updateStatus(`已撤回上一步。当前棋子数量：${game.board.filter(cell => cell).length}`);
+                game.updateMoveHint("选择一枚棋子进行跳跃");
+            }
+        }
+
+        function toggleMode() {
+            game.selectedPiece = -1;
+            
+            if (game.isReverseMode) {
+                if (game.reverseSetup) {
+                    // 从逆推设置阶段切换到逆推游戏阶段
+                    const pieceCount = game.board.filter(cell => cell).length;
+                    if (pieceCount === 0) {
+                        alert('请至少放置一枚棋子！');
+                        return;
+                    }
+                    game.reverseSetup = false;
+                    game.updateGamePhase("逆推模式：从结果往回推");
+                    game.updateStatus("逆推模式：点击棋子查看可能的上一步");
+                    game.updateMoveHint("选择棋子查看逆推选项");
+                    document.getElementById('modeBtn').textContent = '结束逆推模式';
+                } else {
+                    // 切换到正向模式
+                    game.isReverseMode = false;
+                    game.reverseStep = 0;
+                    game.reverseSetup = false;
+                    // 切换回10个格子的棋盘
+                    game.boardSize = 10;
+                    game.board = Array(game.boardSize).fill(true);
+                    game.gameStarted = false;
+                    // 重新创建棋盘
+                    game.createBoard();
+                    document.getElementById('modeBtn').textContent = '切换到逆推模式';
+                    game.updateGamePhase("阶段一：选择初始空格位置");
+                    game.updateStatus("请点击任意棋子移除，创建初始空格开始游戏");
+                    game.updateMoveHint("");
+                }
+            } else {
+                // 切换到逆推模式
+                game.isReverseMode = true;
+                game.reverseStep = 0;
+                game.reverseSetup = true;
+                // 切换到20个格子的棋盘
+                game.boardSize = 20;
+                game.board = Array(game.boardSize).fill(false);
+                // 重新创建棋盘
+                game.createBoard();
+                document.getElementById('modeBtn').textContent = '开始逆推';
+                game.updateGamePhase("逆推模式设置：点击空格放置棋子");
+                game.updateStatus("逆推模式：请在20格棋盘上放置一个棋子作为逆推的起点");
+                game.updateMoveHint("点击空格放置棋子，放置后将自动开始逆推");
+                
+                // 延迟滚动到中心位置，确保DOM已更新
+                setTimeout(() => {
+                    game.scrollToCenter();
+                }, 200);
+            }
+            
+            game.updateDisplay();
+        }
+    </script>
+</body>
+</html>
